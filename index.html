@@ -1,68 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>PCM Audio Player</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h2>PCM Audio Player</h2>
 
-<input type="file" id="fileInput" accept=".pcm"/>
+<div class="app">
+  <header>
+    <h1>PCM Audio Player</h1>
+    <p class="subtitle">Raw PCM decoder & waveform viewer</p>
+  </header>
 
-<div class="controls">
-  Sample Rate:
-  <input type="number" id="sampleRate" value="16000"/>
+  <!-- File -->
+  <section class="card file-card">
+    <label class="file-upload">
+      <input type="file" id="fileInput" accept=".pcm">
+      <span>Select PCM File</span>
+    </label>
+    <span id="fileName" class="file-name">No file selected</span>
+  </section>
 
-  Bit Depth:
-  <select id="bitDepth">
-    <option value="16">16-bit</option>
-    <option value="8">8-bit</option>
-  </select>
+  <!-- Config -->
+  <section class="card grid">
+    <div>
+      <label>Sample Rate</label>
+      <input type="number" id="sampleRate" value="16000">
+    </div>
+    <div>
+      <label>Bit Depth</label>
+      <select id="bitDepth">
+        <option value="16">16-bit</option>
+        <option value="8">8-bit</option>
+      </select>
+    </div>
+    <div>
+      <label>Channels</label>
+      <select id="channels">
+        <option value="1">Mono</option>
+        <option value="2">Stereo</option>
+      </select>
+    </div>
+    <div>
+      <label>Endianness</label>
+      <select id="endian">
+        <option value="little">Little</option>
+        <option value="big">Big</option>
+      </select>
+    </div>
+    <div>
+      <label>Signed</label>
+      <select id="signed">
+        <option value="true">Signed</option>
+        <option value="false">Unsigned</option>
+      </select>
+    </div>
+  </section>
 
-  Channels:
-  <select id="channels">
-    <option value="1">Mono</option>
-    <option value="2">Stereo</option>
-  </select>
+  <!-- Transport -->
+  <section class="card transport-bar">
+    <button class="primary" onclick="decodePCMFile()">Decode</button>
 
-  Endianness:
-  <select id="endian">
-    <option value="little">Little Endian</option>
-    <option value="big">Big Endian</option>
-  </select>
+    <button id="playPauseBtn" class="icon-btn" onclick="togglePlay()" style="display:none;">
+      ▶
+    </button>
 
-  Signed:
-  <select id="signed">
-    <option value="true">Signed</option>
-    <option value="false">Unsigned</option>
-  </select>
+    <div class="progress-container" id="progressContainer" style="display:none;">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <span class="time-label" id="timeLabel" style="display:none;">00:00 / 00:00</span>
+
+    <select id="downloadFormat" style="display:none;">
+      <option value="wav">WAV</option>
+      <option value="mp3">MP3</option>
+    </select>
+
+    <button id="downloadBtn" onclick="downloadAudio()" style="display:none;">
+      ⬇ Download
+    </button>
+  </section>
+
+  <!-- Timeline / Waveform -->
+  <section class="card timeline-card" id="timeline" style="display:none;">
+    <div class="timeline-body">
+      <canvas id="ruler"></canvas>
+      <canvas id="waveform"></canvas>
+    </div>
+  </section>
+
+  <section class="card info">
+    <h2>What is PCM?</h2>
+    <p>
+      <strong>PCM (Pulse Code Modulation)</strong> is a raw, uncompressed digital
+      audio format where sound is represented as a sequence of numeric samples.
+      Each sample stores the amplitude of the audio signal at a specific moment in time.
+    </p>
+
+    <h3>How PCM Audio Works</h3>
+    <ul>
+      <li><strong>Sampling Rate</strong> – How many samples are taken per second (e.g. 16,000 Hz)</li>
+      <li><strong>Bit Depth</strong> – Precision of each sample (e.g. 16-bit)</li>
+      <li><strong>Channels</strong> – Mono or Stereo audio</li>
+      <li><strong>Signed & Endianness</strong> – How numeric sample values are stored in bytes</li>
+    </ul>
+
+    <h3>Why PCM Needs Configuration</h3>
+    <p>
+      Raw PCM files contain <strong>no headers or metadata</strong>.
+      To play them correctly, the player must know the exact format
+      (sample rate, bit depth, channels, signedness, and byte order).
+    </p>
+
+    <h3>How This Player Works</h3>
+    <ol>
+      <li>User selects a PCM file and provides format details</li>
+      <li>The file is decoded into floating-point samples</li>
+      <li>Waveform and time ruler are rendered on the canvas</li>
+      <li>Audio is played using the Web Audio API</li>
+      <li>Zoom, seek, scroll, and playback speed work in real time</li>
+    </ol>
+
+    <p class="note">
+      💡 Tip: If the waveform looks distorted or silent, the PCM configuration
+      may be incorrect.
+    </p>
+  </section>
+
 </div>
-
-<!-- <button onclick="playPCM()">Play</button>
-<button onclick="stopPCM()">Stop</button> -->
-
-<button onclick="decodePCMFile()">Decode</button>
-
-<div id="playerControls" style="display:none;">
-  <button onclick="play()">Play</button>
-  <button onclick="pause()">Pause</button>
-</div>
-
-<button onclick="downloadWav()">Download WAV</button>
-
-<div class="toolbar">
-  <label>Zoom</label>
-  <input type="range" min="1" max="10" value="1" id="zoom">
-
-  <label>Speed</label>
-  <input type="range" min="0.5" max="2" value="1" step="0.1" id="speed">
-  <span id="speedLabel">1.0x</span>
-</div>
-
-<canvas id="ruler" height="30"></canvas>
-
-
-<canvas id="waveform"></canvas>
 
 <script src="player.js"></script>
 </body>
